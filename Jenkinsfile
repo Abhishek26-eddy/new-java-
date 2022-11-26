@@ -15,7 +15,7 @@ pipeline{
                     withSonarQubeEnv(credentialsId: 'sonartoken') {
                             sh 'chmod +x gradlew'
                             sh './gradlew build'
-                            sh './gradlew sonarqube --stacktrace'
+                            sh './gradlew sonarqube'
                     }
 
                     timeout(time: 1, unit: 'HOURS') {
