@@ -17,16 +17,22 @@ pipeline{
         stage("docker build & docker push"){
             steps{
                 script{
-                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass')]) {
+                    withCredentials([string(credentialsId: 'docker_pass', variable: 'nexus_password')]) {
                              sh '''
                                 docker build -t 3.12.132.208:8083/springapp:${VERSION} .
-                                docker login -u admin -p $nexus_pass 3.12.132.208:8083 
-                                docker push  3.12.132.208:8083/springapp:${VERSION}
-                                docker rmi 3.12.132.208:8083/springapp:${VERSION}
+                                docker login -u admin -p $nexus_password 3.12.132.208:8083 
+                                docker push  :8083/springapp:${VERSION}
+                                docker rmi 34.125.214.226:8083/springapp:${VERSION}
                             '''
                     }
                 }
             }
         }
+        
+     post {
+		always {
+			mail bcc: '', body: "<br>Project: ${env.JOB_NAME} <br>Build Number: ${env.BUILD_NUMBER} <br> URL de build: ${env.BUILD_URL}", cc: '', charset: 'UTF-8', from: '', mimeType: 'text/html', replyTo: '', subject: "${currentBuild.result} CI: Project name -> ${env.JOB_NAME}", to: "abhishek.prajapati@octrotalk.com";  
+		 }
+	   }    
     }
 }
