@@ -33,7 +33,7 @@ pipeline{
                 script{
                     dir('kubernetes/') 
                         {
-                            sh 'helm --help'
+                            sh 'helm datree test myapp'
                         }
                     }
                 }
