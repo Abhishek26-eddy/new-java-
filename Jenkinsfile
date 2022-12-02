@@ -28,7 +28,7 @@ pipeline{
                 }
             }
         }
-        stage('indentifying misconfigs using datree in helm charts'){
+        stage('Checking helm status'){
             steps{
                 script{
                     dir('kubernetes/') 
