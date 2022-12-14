@@ -28,12 +28,12 @@ pipeline{
                 }
             }
         }
-        stage('indentifying helm version'){
+        stage('indentifying misconfigs using datree in helm charts'){
             steps{
                 script{
                     dir('kubernetes/') 
                         {
-                            sh 'helm version'
+                            sh 'helm datree test myapp/'
                         }
                     }
                 }
@@ -41,18 +41,29 @@ pipeline{
         stage("pushing the helm charts to nexus"){
             steps{
                 script{
-                    withCredentials([string(credentialsId: 'nexus_pass', variable: 'nexus_pass')]) {
+                    withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_password')]) {
                           dir('kubernetes/') {
                              sh '''
                                  helmversion=$( helm show chart myapp | grep version | cut -d: -f 2 | tr -d ' ')
                                  tar -czvf  myapp-${helmversion}.tgz myapp/
-                                 curl -u admin:$nexus_pass http://3.12.132.208:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz -v
+                                 curl -u admin:$docker_password http://3.12.132.208:8081/repository/helm-hosted/ --upload-file myapp-${helmversion}.tgz -v
                             '''
                           }
                     }
                 }
             }
-        }
+        }   
+        stage('Deploying application on k8s cluster') {
+            steps {
+               script{
+                   withCredentials([kubeconfigFile(credentialsId: 'kubernetes-config', variable: 'KUBECONFIG')]) {
+                        dir('kubernetes/') {
+                          sh 'helm upgrade --install --set image.repository="3.12.132.208:8083/springapp" --set image.tag="${VERSION}" myjavaapp myapp/ ' 
+                        }
+                    }
+               }
+            }
+        }   
     }    
     post {
 		    always {
